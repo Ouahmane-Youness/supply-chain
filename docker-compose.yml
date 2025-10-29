@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: supplychainx-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: supplychainx_db
+      POSTGRES_USER: supplychainx_user
+      POSTGRES_PASSWORD: supplychainx_pass
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - supplychainx-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supplychainx_user -d supplychainx_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: supplychainx-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/supplychainx_db
+      SPRING_DATASOURCE_USERNAME: supplychainx_user
+      SPRING_DATASOURCE_PASSWORD: supplychainx_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_LIQUIBASE_ENABLED: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - supplychainx-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: supplychainx-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@supplychainx.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - supplychainx-network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  supplychainx-network:
+    driver: bridge
