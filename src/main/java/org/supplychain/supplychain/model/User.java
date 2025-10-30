@@ -35,6 +35,5 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Role role;
 
-    @Column(nullable = false)
-    private Boolean active = true;
+
 }

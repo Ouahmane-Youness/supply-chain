@@ -56,8 +56,5 @@ public class RawMaterial extends BaseEntity {
     @OneToMany(mappedBy = "material")
     private List<BillOfMaterial> billOfMaterials = new ArrayList<>();
 
-    @Transient
-    public Integer getAvailableStock() {
-        return stock - reservedStock;
-    }
+
 }

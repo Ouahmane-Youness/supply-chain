@@ -9,6 +9,8 @@ import org.supplychain.supplychain.enums.OrderStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -22,30 +24,18 @@ public class Order extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idOrder;
 
-    @Column(nullable = false, unique = true)
-    private String orderNumber;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
 
-    @Column(nullable = false)
-    private Integer quantity;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductOrder> productOrders = new ArrayList<>();
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal unitPrice;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(nullable = false)
-    private LocalDate orderDate;
-
-    private LocalDate expectedDeliveryDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -54,8 +44,7 @@ public class Order extends BaseEntity {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Delivery delivery;
 
-    @Transient
-    public BigDecimal calculateTotalAmount() {
-        return unitPrice.multiply(BigDecimal.valueOf(quantity));
-    }
+
+
+
 }

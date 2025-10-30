@@ -38,9 +38,6 @@ public class SupplyOrder extends BaseEntity {
     @Column(nullable = false)
     private LocalDate orderDate;
 
-    private LocalDate expectedDeliveryDate;
-
-    private LocalDate actualDeliveryDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -49,10 +46,5 @@ public class SupplyOrder extends BaseEntity {
     @Column(precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @Transient
-    public BigDecimal calculateTotalAmount() {
-        return orderLines.stream()
-                .map(line -> line.getUnitPrice().multiply(BigDecimal.valueOf(line.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
+
 }

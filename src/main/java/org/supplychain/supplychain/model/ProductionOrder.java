@@ -40,14 +40,10 @@ public class ProductionOrder extends BaseEntity {
     @Column(nullable = false)
     private Priority priority = Priority.STANDARD;
 
-    private LocalDate plannedStartDate;
+    private LocalDate StartDate;
 
-    private LocalDate actualStartDate;
+    private LocalDate EndtDate;
 
-    private LocalDate plannedEndDate;
 
-    private LocalDate actualEndDate;
 
-    @Column(nullable = false)
-    private Boolean materialsReserved = false;
 }
