@@ -28,9 +28,6 @@ public class Product extends BaseEntity {
     @Column(length = 1000)
     private String description;
 
-    @Column(nullable = false, unique = true)
-    private String productCode;
-
     @Column(nullable = false)
     private Integer productionTime;
 
@@ -46,8 +43,6 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private String unit;
 
-    @Column(nullable = false)
-    private Boolean active = true;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<BillOfMaterial> billOfMaterials = new ArrayList<>();
@@ -55,6 +50,10 @@ public class Product extends BaseEntity {
     @OneToMany(mappedBy = "product")
     private List<ProductionOrder> productionOrders = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product")
-    private List<Order> customerOrders = new ArrayList<>();
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    private List<ProductOrder> productOrders = new ArrayList<>();
+
+
+
+
 }

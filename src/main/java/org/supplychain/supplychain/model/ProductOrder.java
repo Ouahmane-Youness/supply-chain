@@ -5,35 +5,37 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.supplychain.supplychain.model.BaseEntity;
 
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "supply_order_lines")
+@Table(name = "product_orders")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class SupplyOrderLine extends BaseEntity {
+public class ProductOrder extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idLine;
+    private Long idProductOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "supply_order_id", nullable = false)
-    private SupplyOrder supplyOrder;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "raw_material_id", nullable = false)
-    private RawMaterial rawMaterial;
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(nullable = false)
     private Integer quantity;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal unitPrice;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalPrice;
 
 
 }

@@ -38,11 +38,6 @@ public class Supplier extends BaseEntity {
 
     private Integer leadTime;
 
-    @Column(nullable = false)
-    private Boolean active = true;
-
-    private LocalDate lastOrderDate;
-
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
     private List<SupplyOrder> supplyOrders = new ArrayList<>();
 

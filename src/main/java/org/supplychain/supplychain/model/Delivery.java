@@ -28,28 +28,17 @@ public class Delivery extends BaseEntity {
 
     private String deliveryAddress;
 
-    private String deliveryCity;
-
-    private String recipientName;
-
-    private String recipientPhone;
-
-    private String vehicle;
-
     private String driver;
 
-    private String driverPhone;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DeliveryStatus status = DeliveryStatus.PLANIFIEE;
 
-    private LocalDate plannedDeliveryDate;
+    private LocalDate DeliveryDate;
 
-    private LocalDate actualDeliveryDate;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal deliveryCost;
 
-    private String trackingNumber;
 }
