@@ -7,7 +7,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.supplychain.supplychain.dto.rawmaterial.ErrorResponse;
+import org.supplychain.supplychain.response.ErrorResponse;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -16,10 +16,10 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // --------------------- ResourceNotFoundException ---------------------
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
-            ResourceNotFoundException ex,
-            HttpServletRequest request) {
+            ResourceNotFoundException ex, HttpServletRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
@@ -32,26 +32,10 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(ResourceInUseException.class)
-    public ResponseEntity<ErrorResponse> handleResourceInUseException(
-            ResourceInUseException ex,
-            HttpServletRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.CONFLICT.value(),
-                "Conflict",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
-    }
-
+    // --------------------- DuplicateResourceException ---------------------
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateResourceException(
-            DuplicateResourceException ex,
-            HttpServletRequest request) {
+            DuplicateResourceException ex, HttpServletRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
@@ -64,10 +48,26 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
+    // --------------------- ResourceInUseException ---------------------
+    @ExceptionHandler(ResourceInUseException.class)
+    public ResponseEntity<ErrorResponse> handleResourceInUseException(
+            ResourceInUseException ex, HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    // --------------------- Validation errors ---------------------
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
-            MethodArgumentNotValidException ex,
-            HttpServletRequest request) {
+            MethodArgumentNotValidException ex, HttpServletRequest request) {
 
         Map<String, String> validationErrors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
@@ -88,32 +88,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
-            IllegalArgumentException ex,
-            HttpServletRequest request) {
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
+    // --------------------- Global exception ---------------------
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(
-            Exception ex,
-            HttpServletRequest request) {
+            Exception ex, HttpServletRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
-                "An unexpected error occurred. Please contact support.",
+                ex.getMessage(),
                 request.getRequestURI()
         );
 
