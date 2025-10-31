@@ -1,4 +1,4 @@
-package org.supplychain.supplychain.controller;
+package org.supplychain.supplychain.controller.approvisionnement;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
