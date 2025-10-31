@@ -22,6 +22,9 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
     enabled: true
 
+  main:
+    allow-bean-definition-overriding: true
+
 server:
   port: 8080
 

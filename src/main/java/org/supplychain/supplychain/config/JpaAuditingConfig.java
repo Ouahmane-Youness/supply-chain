@@ -12,7 +12,7 @@ import java.util.Optional;
 public class JpaAuditingConfig {
 
     @Bean
-    public AuditorAware<String> auditorProvider() {
+    public AuditorAware<String> myauditorProvider() {
         return () -> Optional.of("system");
     }
 }
