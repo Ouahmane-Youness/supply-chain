@@ -72,7 +72,7 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Récupérer un client par son ID")
+    @Operation(summary = "Récupérer un client par son ID....")
     @GetMapping("/{id}")
     public ResponseEntity<SuccessResponse<CustomerDto>> getCustomerById(
             @PathVariable Long id,
@@ -82,7 +82,7 @@ public class CustomerController {
 
         SuccessResponse<CustomerDto> response = SuccessResponse.of(
                 HttpStatus.OK,
-                "Client récupéré avec succès",
+                "Client récupéré avec succès....",
                 customer,
                 request.getRequestURI()
         );
@@ -90,7 +90,7 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Mettre à jour un client par son ID")
+    @Operation(summary = "Mettre à jour un client par son ID...")
     @PutMapping("/{id}")
     public ResponseEntity<SuccessResponse<CustomerDto>> updateCustomer(
             @PathVariable Long id,
@@ -101,7 +101,7 @@ public class CustomerController {
 
         SuccessResponse<CustomerDto> response = SuccessResponse.of(
                 HttpStatus.OK,
-                "Client mis à jour avec succès",
+                "Client mis à jour avec succès....",
                 updatedCustomer,
                 request.getRequestURI()
         );
@@ -109,7 +109,7 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Supprimer un client par son ID")
+    @Operation(summary = "Supprimer un client par son ID.....")
     @DeleteMapping("/{id}")
     public ResponseEntity<SuccessResponse<Void>> deleteCustomer(
             @PathVariable Long id,
@@ -119,7 +119,7 @@ public class CustomerController {
 
         SuccessResponse<Void> response = SuccessResponse.of(
                 HttpStatus.OK,
-                "Client supprimé avec succès",
+                "Client supprimé avec succès.....",
                 null,
                 request.getRequestURI()
         );
