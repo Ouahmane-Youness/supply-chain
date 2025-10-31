@@ -1,8 +1,12 @@
 package org.supplychain.supplychain.exception;
 
-// Exception quand une ressource est en conflit ou ne peut pas être supprimée
 public class ResourceInUseException extends RuntimeException {
+
     public ResourceInUseException(String message) {
         super(message);
+    }
+
+    public ResourceInUseException(String resource, Long id, String usedIn) {
+        super(String.format("Cannot delete %s with ID %s. It is used in %s", resource, id, usedIn));
     }
 }
