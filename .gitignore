@@ -33,19 +33,3 @@ build/
 .vscode/
 
 
-# Ignorer Docker Compose
-docker-compose.yml
-docker-compose.yaml
-docker-compose*.yml
-docker-compose*.yaml
-
-# Ignorer Dockerfile
-Dockerfile
-Dockerfile*
-
-# Ignorer les fichiers de configuration YAML
-application.yml
-application.yaml
-application-*.yml
-application-*.yaml
-
