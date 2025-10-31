@@ -5,9 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.supplychain.supplychain.model.BaseEntity;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,4 +41,6 @@ public class Supplier extends BaseEntity {
 
     @ManyToMany(mappedBy = "suppliers")
     private List<RawMaterial> materials = new ArrayList<>();
+
+
 }
