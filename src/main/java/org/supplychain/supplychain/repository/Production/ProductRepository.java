@@ -20,4 +20,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT COUNT(po) FROM ProductionOrder po WHERE po.product.idProduct = :productId")
     Long countProductionOrdersByProductId(@Param("productId") Long productId);
+
+
+
+    ////testt
 }
