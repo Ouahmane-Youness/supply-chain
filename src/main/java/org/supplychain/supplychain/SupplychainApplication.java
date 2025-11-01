@@ -5,7 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
-@EnableJpaAuditing// enter date auto
+
+@EnableJpaAuditing
 public class SupplychainApplication {
 
     public static void main(String[] args) {

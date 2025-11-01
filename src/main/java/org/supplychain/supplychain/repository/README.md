@@ -1,1 +1,0 @@
-# JPA Repositories (database access)
