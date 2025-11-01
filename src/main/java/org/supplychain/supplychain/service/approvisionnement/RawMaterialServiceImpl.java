@@ -15,9 +15,7 @@ import org.supplychain.supplychain.model.Supplier;
 import org.supplychain.supplychain.repository.approvisionnement.RawMaterialRepository;
 import org.supplychain.supplychain.repository.approvisionnement.SupplierRepository;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

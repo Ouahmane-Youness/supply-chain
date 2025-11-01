@@ -5,13 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.supplychain.supplychain.enums.Role;
-import org.supplychain.supplychain.enums.SupplyOrderStatus;
 import org.supplychain.supplychain.model.*;
 import org.supplychain.supplychain.repository.approvisionnement.RawMaterialRepository;
 import org.supplychain.supplychain.repository.approvisionnement.SupplierRepository;
+//import org.supplychain.supplychain.repository.approvisionnement.SupplierRepository;
 
-import java.math.BigDecimal;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

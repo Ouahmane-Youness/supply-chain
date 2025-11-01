@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.supplychain.supplychain.dto.supplier.SupplierDTO;
 import org.supplychain.supplychain.mapper.modelSupplier.SupplierMapper;
 import org.supplychain.supplychain.model.Supplier;
-import org.supplychain.supplychain.repository.modelSupplier.SupplierRepository;
+import org.supplychain.supplychain.repository.approvisionnement.SupplierRepository;
 import org.supplychain.supplychain.service.modelSupplier.SupplierService;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -43,15 +43,35 @@ public class SupplierServiceImpl implements SupplierService {
         return supplierMapper.toDTO(supplierRepository.save(existing));
     }
 
-    @Override
+//    @Override
+//    public void deleteSupplier(Long id) {
+//        Supplier supplier = supplierRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Fournisseur introuvable"));
+//        if (!supplier.getSupplyOrders().isEmpty()) {
+//            throw new RuntimeException("Impossible de supprimer : des commandes actives existent");
+//        }
+//        supplierRepository.delete(supplier);
+//    }
+
     public void deleteSupplier(Long id) {
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Fournisseur introuvable"));
+
+        // check exit supplirOrder before delte
         if (!supplier.getSupplyOrders().isEmpty()) {
             throw new RuntimeException("Impossible de supprimer : des commandes actives existent");
         }
+
+        // check supplier -> material before deleting
+        if (!supplier.getMaterials().isEmpty()) {
+            throw new RuntimeException("Impossible de supprimer : des matières premières sont associées");
+        }
+
+        // no relation delte supplier
         supplierRepository.delete(supplier);
     }
+
+
 
     @Override
     public List<SupplierDTO> getAllSuppliers() {
