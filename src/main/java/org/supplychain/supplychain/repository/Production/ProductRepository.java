@@ -1,5 +1,7 @@
 package org.supplychain.supplychain.repository.Production;
 
+import org.supplychain.supplychain.enums.OrderStatus;
+import org.supplychain.supplychain.enums.ProductionOrderStatus;
 import org.supplychain.supplychain.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Long countProductionOrdersByProductId(@Param("productId") Long productId);
 
 
+    @Query("SELECT COUNT(po) FROM ProductionOrder po WHERE po.product.idProduct = :productId AND po.status = :status")
+    Long countProductionOrdersByProductIdAndStatus(@Param("productId") Long productId, @Param("status") ProductionOrderStatus status);
 
-    ////testt
+
+    @Query("SELECT COUNT(op) FROM ProductOrder op JOIN op.order o WHERE op.product.idProduct = :productId AND o.status = :status")
+    Long countOrdersByProductIdAndStatus(@Param("productId") Long productId, @Param("status") OrderStatus status);
+
+
+
+
 }
