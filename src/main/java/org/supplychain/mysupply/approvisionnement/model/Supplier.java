@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.supplychain.mysupply.common.model.BaseEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "suppliers")
@@ -32,4 +35,10 @@ public class Supplier extends BaseEntity {
     private Double rating;
 
     private Integer leadTime;
+
+    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
+    List<SupplyOrder> supplyOrders = new ArrayList<>();
+
+    @ManyToMany(mappedBy  = "suppliers")
+    private List<RawMaterial> materials = new ArrayList<>();
 }
