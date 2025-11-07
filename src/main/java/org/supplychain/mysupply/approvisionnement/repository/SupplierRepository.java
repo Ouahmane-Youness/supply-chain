@@ -22,6 +22,6 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     @Query("SELECT s FROM Supplier s WHERE s.name ILIKE %:name% OR s.contact ILIKE %:name%")
     Page<Supplier> findByNameOrContactContaining(@Param("name") String name, Pageable pageable);
 
-    @Query("SELECT COUNT(so) FROM SupplyOrder so WHERE so.supplier.idSupplier = :supplierId AND so.status != 'RECUE'")
+    @Query("SELECT COUNT(so) FROM SupplyOrder so WHERE so.supplier.idSupplier = :supplierId AND so.status IN ('EN_ATTENTE', 'EN_COURS')")
     long countActiveOrdersBySupplierId(@Param("supplierId") Long supplierId);
 }

@@ -69,7 +69,7 @@ public class SupplierService {
 
         long activeOrdersCount = supplierRepository.countActiveOrdersBySupplierId(id);
         if (activeOrdersCount > 0) {
-            throw new RuntimeException("Cannot delete supplier with active orders");
+            throw new RuntimeException("Cannot delete supplier with " + activeOrdersCount + " active order(s). Only suppliers with no active orders (EN_ATTENTE or EN_COURS) can be deleted.");
         }
 
         supplierRepository.deleteById(id);

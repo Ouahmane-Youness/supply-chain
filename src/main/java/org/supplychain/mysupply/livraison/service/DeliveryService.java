@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.supplychain.mysupply.livraison.dto.DeliveryDTO;
 import org.supplychain.mysupply.livraison.dto.DeliveryResponseDTO;
+import org.supplychain.mysupply.livraison.dto.OrderResponseDTO;
 import org.supplychain.mysupply.livraison.enums.DeliveryStatus;
 import org.supplychain.mysupply.livraison.enums.CustomerOrderStatus;
 import org.supplychain.mysupply.livraison.mapper.DeliveryMapper;
+import org.supplychain.mysupply.livraison.mapper.CustomerOrderMapper;
 import org.supplychain.mysupply.livraison.model.Delivery;
 import org.supplychain.mysupply.livraison.model.CustomerOrder;
 import org.supplychain.mysupply.livraison.repository.DeliveryRepository;
@@ -26,6 +28,7 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final CustomerOrderRepository customerOrderRepository;
     private final DeliveryMapper deliveryMapper;
+    private final CustomerOrderMapper customerOrderMapper;
 
     public DeliveryResponseDTO createDelivery(DeliveryDTO deliveryDTO) {
         CustomerOrder customerOrder = customerOrderRepository.findById(deliveryDTO.getOrderId())
@@ -50,7 +53,7 @@ public class DeliveryService {
         }
 
         Delivery savedDelivery = deliveryRepository.save(delivery);
-        return deliveryMapper.toResponseDTO(savedDelivery);
+        return mapToResponseDTO(savedDelivery);
     }
 
     private String generateTrackingNumber() {
@@ -61,31 +64,31 @@ public class DeliveryService {
     public DeliveryResponseDTO getDeliveryById(Long id) {
         Delivery delivery = deliveryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Delivery not found with id: " + id));
-        return deliveryMapper.toResponseDTO(delivery);
+        return mapToResponseDTO(delivery);
     }
 
     @Transactional(readOnly = true)
     public Page<DeliveryResponseDTO> getAllDeliveries(Pageable pageable) {
         return deliveryRepository.findAll(pageable)
-                .map(deliveryMapper::toResponseDTO);
+                .map(this::mapToResponseDTO);
     }
 
     @Transactional(readOnly = true)
     public Page<DeliveryResponseDTO> getDeliveriesByStatus(DeliveryStatus status, Pageable pageable) {
         return deliveryRepository.findByStatus(status, pageable)
-                .map(deliveryMapper::toResponseDTO);
+                .map(this::mapToResponseDTO);
     }
 
     @Transactional(readOnly = true)
     public Page<DeliveryResponseDTO> getDeliveriesByDriver(String driver, Pageable pageable) {
         return deliveryRepository.findByDriver(driver, pageable)
-                .map(deliveryMapper::toResponseDTO);
+                .map(this::mapToResponseDTO);
     }
 
     @Transactional(readOnly = true)
     public Page<DeliveryResponseDTO> getDeliveriesByScheduledDate(LocalDate date, Pageable pageable) {
         return deliveryRepository.findByScheduledDate(date, pageable)
-                .map(deliveryMapper::toResponseDTO);
+                .map(this::mapToResponseDTO);
     }
 
     @Transactional(readOnly = true)
@@ -94,7 +97,7 @@ public class DeliveryService {
         if (delivery == null) {
             throw new RuntimeException("Delivery not found with tracking number: " + trackingNumber);
         }
-        return deliveryMapper.toResponseDTO(delivery);
+        return mapToResponseDTO(delivery);
     }
 
     public DeliveryResponseDTO updateDelivery(Long id, DeliveryDTO deliveryDTO) {
@@ -107,7 +110,7 @@ public class DeliveryService {
 
         deliveryMapper.updateEntityFromDTO(deliveryDTO, delivery);
         Delivery updatedDelivery = deliveryRepository.save(delivery);
-        return deliveryMapper.toResponseDTO(updatedDelivery);
+        return mapToResponseDTO(updatedDelivery);
     }
 
     public DeliveryResponseDTO startDelivery(Long id) {
@@ -123,7 +126,7 @@ public class DeliveryService {
         customerOrderRepository.save(delivery.getCustomerOrder());
 
         Delivery updatedDelivery = deliveryRepository.save(delivery);
-        return deliveryMapper.toResponseDTO(updatedDelivery);
+        return mapToResponseDTO(updatedDelivery);
     }
 
     public DeliveryResponseDTO completeDelivery(Long id) {
@@ -140,7 +143,7 @@ public class DeliveryService {
         customerOrderRepository.save(delivery.getCustomerOrder());
 
         Delivery updatedDelivery = deliveryRepository.save(delivery);
-        return deliveryMapper.toResponseDTO(updatedDelivery);
+        return mapToResponseDTO(updatedDelivery);
     }
 
     public DeliveryResponseDTO updateDeliveryStatus(Long id, DeliveryStatus newStatus) {
@@ -153,7 +156,7 @@ public class DeliveryService {
                     .orElseThrow(() -> new RuntimeException("Delivery not found with id: " + id));
             delivery.setStatus(newStatus);
             Delivery updatedDelivery = deliveryRepository.save(delivery);
-            return deliveryMapper.toResponseDTO(updatedDelivery);
+            return mapToResponseDTO(updatedDelivery);
         }
     }
 
@@ -166,5 +169,16 @@ public class DeliveryService {
         }
 
         deliveryRepository.deleteById(id);
+    }
+
+    private DeliveryResponseDTO mapToResponseDTO(Delivery delivery) {
+        DeliveryResponseDTO responseDTO = deliveryMapper.toResponseDTO(delivery);
+
+        if (delivery.getCustomerOrder() != null) {
+            OrderResponseDTO orderDTO = customerOrderMapper.toResponseDTO(delivery.getCustomerOrder());
+            responseDTO.setOrder(orderDTO);
+        }
+
+        return responseDTO;
     }
 }

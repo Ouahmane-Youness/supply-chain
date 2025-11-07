@@ -11,6 +11,7 @@ import org.supplychain.mysupply.livraison.dto.OrderResponseDTO;
 import org.supplychain.mysupply.livraison.enums.CustomerOrderStatus;
 import org.supplychain.mysupply.livraison.mapper.CustomerOrderMapper;
 import org.supplychain.mysupply.livraison.mapper.CustomerOrderLineMapper;
+import org.supplychain.mysupply.livraison.mapper.DeliveryMapper;
 import org.supplychain.mysupply.livraison.model.Customer;
 import org.supplychain.mysupply.livraison.model.CustomerOrder;
 import org.supplychain.mysupply.livraison.model.CustomerOrderLine;
@@ -33,6 +34,7 @@ public class CustomerOrderService {
     private final ProductRepository productRepository;
     private final CustomerOrderMapper customerOrderMapper;
     private final CustomerOrderLineMapper customerOrderLineMapper;
+    private final DeliveryMapper deliveryMapper;
 
     public OrderResponseDTO createOrder(OrderDTO orderDTO) {
         if (customerOrderRepository.existsByOrderNumber(orderDTO.getOrderNumber())) {
@@ -72,7 +74,7 @@ public class CustomerOrderService {
         consumeProductStock(orderLines);
 
         CustomerOrder savedOrder = customerOrderRepository.save(customerOrder);
-        return customerOrderMapper.toResponseDTO(savedOrder);
+        return mapToResponseDTO(savedOrder);
     }
 
     private void validateProductAvailability(List<OrderLineDTO> orderLines) {
@@ -109,31 +111,31 @@ public class CustomerOrderService {
     public OrderResponseDTO getOrderById(Long id) {
         CustomerOrder customerOrder = customerOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
-        return customerOrderMapper.toResponseDTO(customerOrder);
+        return mapToResponseDTO(customerOrder);
     }
 
     @Transactional(readOnly = true)
     public Page<OrderResponseDTO> getAllOrders(Pageable pageable) {
         return customerOrderRepository.findAll(pageable)
-                .map(customerOrderMapper::toResponseDTO);
+                .map(this::mapToResponseDTO);
     }
 
     @Transactional(readOnly = true)
     public Page<OrderResponseDTO> getOrdersByStatus(CustomerOrderStatus status, Pageable pageable) {
         return customerOrderRepository.findByStatus(status, pageable)
-                .map(customerOrderMapper::toResponseDTO);
+                .map(this::mapToResponseDTO);
     }
 
     @Transactional(readOnly = true)
     public Page<OrderResponseDTO> getOrdersByCustomer(Long customerId, Pageable pageable) {
         return customerOrderRepository.findByCustomer(customerId, pageable)
-                .map(customerOrderMapper::toResponseDTO);
+                .map(this::mapToResponseDTO);
     }
 
     @Transactional(readOnly = true)
     public Page<OrderResponseDTO> getOrdersWithoutDelivery(Pageable pageable) {
         return customerOrderRepository.findOrdersWithoutDelivery(pageable)
-                .map(customerOrderMapper::toResponseDTO);
+                .map(this::mapToResponseDTO);
     }
 
     public OrderResponseDTO updateOrderStatus(Long id, CustomerOrderStatus newStatus) {
@@ -146,7 +148,7 @@ public class CustomerOrderService {
 
         customerOrder.setStatus(newStatus);
         CustomerOrder updatedOrder = customerOrderRepository.save(customerOrder);
-        return customerOrderMapper.toResponseDTO(updatedOrder);
+        return mapToResponseDTO(updatedOrder);
     }
 
     public void deleteOrder(Long id) {
@@ -167,5 +169,15 @@ public class CustomerOrderService {
             product.setStock(product.getStock() + orderLine.getQuantity());
             productRepository.save(product);
         }
+    }
+
+    private OrderResponseDTO mapToResponseDTO(CustomerOrder customerOrder) {
+        OrderResponseDTO responseDTO = customerOrderMapper.toResponseDTO(customerOrder);
+
+        if (customerOrder.getDelivery() != null) {
+            responseDTO.setDelivery(deliveryMapper.toResponseDTO(customerOrder.getDelivery()));
+        }
+
+        return responseDTO;
     }
 }

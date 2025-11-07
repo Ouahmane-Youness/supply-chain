@@ -7,7 +7,7 @@ import org.supplychain.mysupply.livraison.dto.DeliveryDTO;
 import org.supplychain.mysupply.livraison.dto.DeliveryResponseDTO;
 import org.supplychain.mysupply.livraison.model.Delivery;
 
-@Mapper(componentModel = "spring", uses = {CustomerOrderMapper.class})
+@Mapper(componentModel = "spring")
 public interface DeliveryMapper {
 
     @Mapping(target = "order", source = "customerOrder")
