@@ -11,10 +11,9 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeliveryResponseDTO {
+public class DeliverySummaryDTO {
 
     private Long idDelivery;
-    private OrderSummaryDTO order;
     private String deliveryAddress;
     private String city;
     private String driver;

@@ -5,9 +5,11 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.supplychain.mysupply.livraison.dto.DeliveryDTO;
 import org.supplychain.mysupply.livraison.dto.DeliveryResponseDTO;
+import org.supplychain.mysupply.livraison.dto.OrderSummaryDTO;
+import org.supplychain.mysupply.livraison.model.CustomerOrder;
 import org.supplychain.mysupply.livraison.model.Delivery;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {CustomerMapper.class})
 public interface DeliveryMapper {
 
     @Mapping(target = "order", source = "customerOrder")
@@ -25,4 +27,7 @@ public interface DeliveryMapper {
     @Mapping(target = "actualDeliveryDate", ignore = true)
     @Mapping(target = "trackingNumber", ignore = true)
     void updateEntityFromDTO(DeliveryDTO deliveryDTO, @MappingTarget Delivery delivery);
+
+    @Mapping(target = "customer", source = "customer")
+    OrderSummaryDTO toOrderSummaryDTO(CustomerOrder customerOrder);
 }

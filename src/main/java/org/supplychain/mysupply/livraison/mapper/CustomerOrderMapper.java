@@ -3,9 +3,11 @@ package org.supplychain.mysupply.livraison.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.supplychain.mysupply.livraison.dto.DeliverySummaryDTO;
 import org.supplychain.mysupply.livraison.dto.OrderDTO;
 import org.supplychain.mysupply.livraison.dto.OrderResponseDTO;
 import org.supplychain.mysupply.livraison.model.CustomerOrder;
+import org.supplychain.mysupply.livraison.model.Delivery;
 
 @Mapper(componentModel = "spring", uses = {CustomerMapper.class, CustomerOrderLineMapper.class})
 public interface CustomerOrderMapper {
@@ -27,4 +29,7 @@ public interface CustomerOrderMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "delivery", ignore = true)
     void updateEntityFromDTO(OrderDTO orderDTO, @MappingTarget CustomerOrder customerOrder);
+
+    // ADD THIS NEW METHOD:
+    DeliverySummaryDTO toDeliverySummaryDTO(Delivery delivery);
 }

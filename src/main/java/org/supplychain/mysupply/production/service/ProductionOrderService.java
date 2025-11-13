@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.supplychain.mysupply.approvisionnement.model.RawMaterial;
 import org.supplychain.mysupply.approvisionnement.repository.RawMaterialRepository;
+import org.supplychain.mysupply.common.exception.ResourceNotFoundException;
+import org.supplychain.mysupply.common.exception.UnauthorizedException;
 import org.supplychain.mysupply.production.dto.ProductionOrderDTO;
 import org.supplychain.mysupply.production.dto.ProductionOrderResponseDTO;
 import org.supplychain.mysupply.production.enums.Priority;
@@ -18,6 +20,7 @@ import org.supplychain.mysupply.production.model.ProductionOrder;
 import org.supplychain.mysupply.production.repository.BillOfMaterialRepository;
 import org.supplychain.mysupply.production.repository.ProductRepository;
 import org.supplychain.mysupply.production.repository.ProductionOrderRepository;
+import org.supplychain.mysupply.production.service.interf.IProductionOrderService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,7 +29,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class ProductionOrderService {
+public class ProductionOrderService implements IProductionOrderService {
 
     private final ProductionOrderRepository productionOrderRepository;
     private final ProductRepository productRepository;
@@ -34,13 +37,14 @@ public class ProductionOrderService {
     private final RawMaterialRepository rawMaterialRepository;
     private final ProductionOrderMapper productionOrderMapper;
 
+    @Override
     public ProductionOrderResponseDTO createProductionOrder(ProductionOrderDTO productionOrderDTO) {
         if (productionOrderRepository.existsByOrderNumber(productionOrderDTO.getOrderNumber())) {
-            throw new RuntimeException("Order number already exists: " + productionOrderDTO.getOrderNumber());
+            throw new IllegalArgumentException("Order number already exists: " + productionOrderDTO.getOrderNumber());
         }
 
         Product product = productRepository.findById(productionOrderDTO.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + productionOrderDTO.getProductId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productionOrderDTO.getProductId()));
 
         validateMaterialAvailability(product, productionOrderDTO.getQuantity());
 
@@ -76,47 +80,53 @@ public class ProductionOrderService {
         }
 
         if (!insufficientMaterials.isEmpty()) {
-            throw new RuntimeException("Insufficient materials for production: " + String.join(", ", insufficientMaterials));
+            throw new IllegalStateException("Insufficient materials for production: " + String.join(", ", insufficientMaterials));
         }
     }
 
+    @Override
     @Transactional(readOnly = true)
     public ProductionOrderResponseDTO getProductionOrderById(Long id) {
         ProductionOrder productionOrder = productionOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Production order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Production order not found with id: " + id));
         return productionOrderMapper.toResponseDTO(productionOrder);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<ProductionOrderResponseDTO> getAllProductionOrders(Pageable pageable) {
         return productionOrderRepository.findAll(pageable)
                 .map(productionOrderMapper::toResponseDTO);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<ProductionOrderResponseDTO> getProductionOrdersByStatus(ProductionOrderStatus status, Pageable pageable) {
         return productionOrderRepository.findByStatus(status, pageable)
                 .map(productionOrderMapper::toResponseDTO);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<ProductionOrderResponseDTO> getProductionOrdersByPriority(Priority priority, Pageable pageable) {
         return productionOrderRepository.findByPriority(priority, pageable)
                 .map(productionOrderMapper::toResponseDTO);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<ProductionOrderResponseDTO> getProductionOrdersOrderedByPriority(Pageable pageable) {
         return productionOrderRepository.findAllOrderedByPriorityAndDate(pageable)
                 .map(productionOrderMapper::toResponseDTO);
     }
 
+    @Override
     public ProductionOrderResponseDTO startProduction(Long id) {
         ProductionOrder productionOrder = productionOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Production order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Production order not found with id: " + id));
 
         if (productionOrder.getStatus() != ProductionOrderStatus.EN_ATTENTE) {
-            throw new RuntimeException("Can only start production for orders in EN_ATTENTE status");
+            throw new UnauthorizedException("Can only start production for orders in EN_ATTENTE status");
         }
 
         validateMaterialAvailability(productionOrder.getProduct(), productionOrder.getQuantity());
@@ -150,12 +160,13 @@ public class ProductionOrderService {
         return Math.max(1, Math.round(estimatedHours / 8.0));
     }
 
+    @Override
     public ProductionOrderResponseDTO completeProduction(Long id) {
         ProductionOrder productionOrder = productionOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Production order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Production order not found with id: " + id));
 
         if (productionOrder.getStatus() != ProductionOrderStatus.EN_PRODUCTION) {
-            throw new RuntimeException("Can only complete orders that are in production");
+            throw new UnauthorizedException("Can only complete orders that are in production");
         }
 
         Product product = productionOrder.getProduct();
@@ -169,9 +180,10 @@ public class ProductionOrderService {
         return productionOrderMapper.toResponseDTO(updatedOrder);
     }
 
+    @Override
     public ProductionOrderResponseDTO updateProductionOrderStatus(Long id, ProductionOrderStatus newStatus) {
         ProductionOrder productionOrder = productionOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Production order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Production order not found with id: " + id));
 
         if (newStatus == ProductionOrderStatus.EN_PRODUCTION) {
             return startProduction(id);
@@ -184,16 +196,17 @@ public class ProductionOrderService {
         }
     }
 
+    @Override
     public void deleteProductionOrder(Long id) {
         ProductionOrder productionOrder = productionOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Production order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Production order not found with id: " + id));
 
         if (productionOrder.getStatus() == ProductionOrderStatus.EN_PRODUCTION) {
-            throw new RuntimeException("Cannot delete production order that is in progress");
+            throw new UnauthorizedException("Cannot delete production order that is in progress");
         }
 
         if (productionOrder.getStatus() == ProductionOrderStatus.TERMINE) {
-            throw new RuntimeException("Cannot delete completed production order");
+            throw new UnauthorizedException("Cannot delete completed production order");
         }
 
         productionOrderRepository.deleteById(id);

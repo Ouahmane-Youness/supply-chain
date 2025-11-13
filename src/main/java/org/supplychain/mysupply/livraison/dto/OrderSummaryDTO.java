@@ -7,12 +7,11 @@ import org.supplychain.mysupply.livraison.enums.CustomerOrderStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderResponseDTO {
+public class OrderSummaryDTO {
 
     private Long idOrder;
     private String orderNumber;
@@ -21,6 +20,4 @@ public class OrderResponseDTO {
     private BigDecimal totalAmount;
     private CustomerOrderStatus status;
     private String notes;
-    private List<OrderLineResponseDTO> orderLines;
-    private DeliverySummaryDTO delivery;
 }

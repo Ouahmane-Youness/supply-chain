@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.supplychain.mysupply.common.exception.ResourceNotFoundException;
+import org.supplychain.mysupply.common.exception.UnauthorizedException;
 import org.supplychain.mysupply.livraison.dto.OrderDTO;
 import org.supplychain.mysupply.livraison.dto.OrderLineDTO;
 import org.supplychain.mysupply.livraison.dto.OrderResponseDTO;
@@ -17,6 +19,7 @@ import org.supplychain.mysupply.livraison.model.CustomerOrder;
 import org.supplychain.mysupply.livraison.model.CustomerOrderLine;
 import org.supplychain.mysupply.livraison.repository.CustomerRepository;
 import org.supplychain.mysupply.livraison.repository.CustomerOrderRepository;
+import org.supplychain.mysupply.livraison.service.interf.ICustomerOrderService;
 import org.supplychain.mysupply.production.model.Product;
 import org.supplychain.mysupply.production.repository.ProductRepository;
 
@@ -27,7 +30,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CustomerOrderService {
+public class CustomerOrderService implements ICustomerOrderService {
 
     private final CustomerOrderRepository customerOrderRepository;
     private final CustomerRepository customerRepository;
@@ -36,13 +39,14 @@ public class CustomerOrderService {
     private final CustomerOrderLineMapper customerOrderLineMapper;
     private final DeliveryMapper deliveryMapper;
 
+    @Override
     public OrderResponseDTO createOrder(OrderDTO orderDTO) {
         if (customerOrderRepository.existsByOrderNumber(orderDTO.getOrderNumber())) {
-            throw new RuntimeException("Order number already exists: " + orderDTO.getOrderNumber());
+            throw new IllegalArgumentException("Order number already exists: " + orderDTO.getOrderNumber());
         }
 
         Customer customer = customerRepository.findById(orderDTO.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + orderDTO.getCustomerId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + orderDTO.getCustomerId()));
 
         validateProductAvailability(orderDTO.getOrderLines());
 
@@ -55,7 +59,7 @@ public class CustomerOrderService {
 
         for (OrderLineDTO lineDTO : orderDTO.getOrderLines()) {
             Product product = productRepository.findById(lineDTO.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + lineDTO.getProductId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + lineDTO.getProductId()));
 
             CustomerOrderLine orderLine = customerOrderLineMapper.toEntity(lineDTO);
             orderLine.setCustomerOrder(customerOrder);
@@ -82,7 +86,7 @@ public class CustomerOrderService {
 
         for (OrderLineDTO lineDTO : orderLines) {
             Product product = productRepository.findById(lineDTO.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + lineDTO.getProductId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + lineDTO.getProductId()));
 
             if (product.getStock() < lineDTO.getQuantity()) {
                 insufficientProducts.add(String.format(
@@ -95,7 +99,7 @@ public class CustomerOrderService {
         }
 
         if (!insufficientProducts.isEmpty()) {
-            throw new RuntimeException("Insufficient product stock: " + String.join(", ", insufficientProducts));
+            throw new IllegalStateException("Insufficient product stock: " + String.join(", ", insufficientProducts));
         }
     }
 
@@ -107,43 +111,49 @@ public class CustomerOrderService {
         }
     }
 
+    @Override
     @Transactional(readOnly = true)
     public OrderResponseDTO getOrderById(Long id) {
         CustomerOrder customerOrder = customerOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
         return mapToResponseDTO(customerOrder);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<OrderResponseDTO> getAllOrders(Pageable pageable) {
         return customerOrderRepository.findAll(pageable)
                 .map(this::mapToResponseDTO);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<OrderResponseDTO> getOrdersByStatus(CustomerOrderStatus status, Pageable pageable) {
         return customerOrderRepository.findByStatus(status, pageable)
                 .map(this::mapToResponseDTO);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<OrderResponseDTO> getOrdersByCustomer(Long customerId, Pageable pageable) {
         return customerOrderRepository.findByCustomer(customerId, pageable)
                 .map(this::mapToResponseDTO);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public Page<OrderResponseDTO> getOrdersWithoutDelivery(Pageable pageable) {
         return customerOrderRepository.findOrdersWithoutDelivery(pageable)
                 .map(this::mapToResponseDTO);
     }
 
+    @Override
     public OrderResponseDTO updateOrderStatus(Long id, CustomerOrderStatus newStatus) {
         CustomerOrder customerOrder = customerOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
 
         if (customerOrder.getStatus() == CustomerOrderStatus.LIVREE) {
-            throw new RuntimeException("Cannot modify delivered order");
+            throw new UnauthorizedException("Cannot modify delivered order");
         }
 
         customerOrder.setStatus(newStatus);
@@ -151,12 +161,13 @@ public class CustomerOrderService {
         return mapToResponseDTO(updatedOrder);
     }
 
+    @Override
     public void deleteOrder(Long id) {
         CustomerOrder customerOrder = customerOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
 
         if (customerOrder.getStatus() == CustomerOrderStatus.EN_ROUTE || customerOrder.getStatus() == CustomerOrderStatus.LIVREE) {
-            throw new RuntimeException("Cannot delete order that is shipped or delivered");
+            throw new UnauthorizedException("Cannot delete order that is shipped or delivered");
         }
 
         restoreProductStock(customerOrder.getOrderLines());
@@ -175,7 +186,7 @@ public class CustomerOrderService {
         OrderResponseDTO responseDTO = customerOrderMapper.toResponseDTO(customerOrder);
 
         if (customerOrder.getDelivery() != null) {
-            responseDTO.setDelivery(deliveryMapper.toResponseDTO(customerOrder.getDelivery()));
+            responseDTO.setDelivery(customerOrderMapper.toDeliverySummaryDTO(customerOrder.getDelivery()));
         }
 
         return responseDTO;

@@ -175,8 +175,8 @@ public class DeliveryService {
         DeliveryResponseDTO responseDTO = deliveryMapper.toResponseDTO(delivery);
 
         if (delivery.getCustomerOrder() != null) {
-            OrderResponseDTO orderDTO = customerOrderMapper.toResponseDTO(delivery.getCustomerOrder());
-            responseDTO.setOrder(orderDTO);
+            responseDTO.setOrder(deliveryMapper.toOrderSummaryDTO(delivery.getCustomerOrder()));
+
         }
 
         return responseDTO;
