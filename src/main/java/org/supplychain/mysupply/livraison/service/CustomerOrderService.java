@@ -151,6 +151,7 @@ public class CustomerOrderService implements ICustomerOrderService {
 //    }
 
 
+
     private void validateProductAvailability(List<OrderLineDTO> orderLines) {
         List<String> insufficientProducts = new ArrayList<>();
 
