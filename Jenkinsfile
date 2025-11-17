@@ -65,6 +65,26 @@ pipeline {
                 sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
             }
         }
+        stage('Push to DockerHub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(
+                            credentialsId: 'dockerhub-credentials',
+                            usernameVariable: 'DOCKER_USER',
+                            passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh '''
+                    echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
+                    docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_USER}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                    docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_USER}/${DOCKER_IMAGE}:latest
+                    docker push ${DOCKER_USER}/${DOCKER_IMAGE}:${DOCKER_TAG}
+                    docker push ${DOCKER_USER}/${DOCKER_IMAGE}:latest
+                    docker logout
+                '''
+                    }
+                }
+            }
+        }
     }
 
     post {

@@ -5,6 +5,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.supplychain.mysupply.approvisionnement.dto.SupplyOrderDTO;
+import org.supplychain.mysupply.approvisionnement.dto.SupplyOrderLineDTO;
+import org.supplychain.mysupply.approvisionnement.model.RawMaterial;
+import org.supplychain.mysupply.approvisionnement.model.Supplier;
+import org.supplychain.mysupply.approvisionnement.service.SupplyOrderService;
 import org.supplychain.mysupply.common.exception.ResourceNotFoundException;
 import org.supplychain.mysupply.common.exception.UnauthorizedException;
 import org.supplychain.mysupply.livraison.dto.OrderDTO;
@@ -20,12 +25,21 @@ import org.supplychain.mysupply.livraison.model.CustomerOrderLine;
 import org.supplychain.mysupply.livraison.repository.CustomerRepository;
 import org.supplychain.mysupply.livraison.repository.CustomerOrderRepository;
 import org.supplychain.mysupply.livraison.service.interf.ICustomerOrderService;
+import org.supplychain.mysupply.production.dto.ProductionOrderDTO;
+import org.supplychain.mysupply.production.enums.Priority;
+import org.supplychain.mysupply.production.model.BillOfMaterial;
 import org.supplychain.mysupply.production.model.Product;
+import org.supplychain.mysupply.production.model.ProductionOrder;
 import org.supplychain.mysupply.production.repository.ProductRepository;
+import org.supplychain.mysupply.production.service.ProductionOrderService;
+import org.supplychain.mysupply.production.service.interf.IProductionOrderService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +52,8 @@ public class CustomerOrderService implements ICustomerOrderService {
     private final CustomerOrderMapper customerOrderMapper;
     private final CustomerOrderLineMapper customerOrderLineMapper;
     private final DeliveryMapper deliveryMapper;
+//    private final IProductionOrderService productionOrderService;
+//    private final SupplyOrderService supplyOrderService;
 
     @Override
     public OrderResponseDTO createOrder(OrderDTO orderDTO) {
@@ -48,6 +64,7 @@ public class CustomerOrderService implements ICustomerOrderService {
         Customer customer = customerRepository.findById(orderDTO.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + orderDTO.getCustomerId()));
 
+//        CreateProductionORder(orderDTO.getOrderLines());
         validateProductAvailability(orderDTO.getOrderLines());
 
         CustomerOrder customerOrder = customerOrderMapper.toEntity(orderDTO);
@@ -80,6 +97,58 @@ public class CustomerOrderService implements ICustomerOrderService {
         CustomerOrder savedOrder = customerOrderRepository.save(customerOrder);
         return mapToResponseDTO(savedOrder);
     }
+
+//
+//    private void CreateProductionORder(List<OrderLineDTO> orderLineDTOS)
+//    {
+//
+//        for(OrderLineDTO lineDTO : orderLineDTOS)
+//        {
+//            Product product = productRepository.findById(lineDTO.getProductId()).orElseThrow(() -> new ResourceNotFoundException("product not found"));
+//            Integer productQ = product.getStock();
+//            Integer qordered = lineDTO.getQuantity();
+//            if(productQ < qordered)
+//            {
+//                List<BillOfMaterial> boms = product.getBillOfMaterials();
+//                for (BillOfMaterial bom : boms)
+//                {
+//                    RawMaterial rawMaterial = bom.getMaterial();
+//                    Supplier supplierMvp = rawMaterial.getSuppliers().stream().filter(supplier -> supplier.getRating() != null)
+//                            .max(Comparator.comparing(Supplier::getRating)).orElseThrow();
+//
+//                    int quantity = bom.getQuantity();
+//                    int productQNeeded = qordered - productQ;
+//                    if(rawMaterial.getStock() < productQNeeded * quantity)
+//                    {
+//                        SupplyOrderDTO supplyOrderDTO = new SupplyOrderDTO();
+//                        supplyOrderDTO.setOrderDate(LocalDate.parse("2025-12-12"));
+//                        supplyOrderDTO.setOrderNumber("order" + System.currentTimeMillis());
+//                        supplyOrderDTO.setSupplierId(supplierMvp.getIdSupplier());
+//
+//                        SupplyOrderLineDTO orderLineDTO = new SupplyOrderLineDTO();
+//                        orderLineDTO.setQuantity(productQNeeded * quantity - rawMaterial.getStock());
+//                        orderLineDTO.setUnitPrice(BigDecimal.valueOf(550));
+//                        orderLineDTO.setRawMaterialId(rawMaterial.getIdMaterial());
+//
+//                        supplyOrderDTO.setOrderLines(List.of(orderLineDTO));
+//                        supplyOrderService.createSupplyOrder(supplyOrderDTO);
+//
+//
+//                    }
+//                }
+//
+//
+//                ProductionOrderDTO productionOrderDTO = new ProductionOrderDTO();
+//                productionOrderDTO.setProductId(product.getIdProduct());
+//                productionOrderDTO.setOrderDate(LocalDate.parse("2025-12-12"));
+//                productionOrderDTO.setOrderNumber("order"+System.currentTimeMillis());
+//                productionOrderDTO.setPriority(Priority.URGENT);
+//                productionOrderDTO.setQuantity(qordered - productQ);
+//
+//                productionOrderService.createProductionOrder(productionOrderDTO);
+//            }
+//        }
+//    }
 
     private void validateProductAvailability(List<OrderLineDTO> orderLines) {
         List<String> insufficientProducts = new ArrayList<>();
