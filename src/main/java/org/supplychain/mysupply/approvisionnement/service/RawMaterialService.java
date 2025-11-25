@@ -9,12 +9,15 @@ import org.supplychain.mysupply.approvisionnement.dto.RawMaterialDTO;
 import org.supplychain.mysupply.approvisionnement.dto.RawMaterialResponseDTO;
 import org.supplychain.mysupply.approvisionnement.mapper.RawMaterialMapper;
 import org.supplychain.mysupply.approvisionnement.model.RawMaterial;
+import org.supplychain.mysupply.approvisionnement.model.Supplier;
 import org.supplychain.mysupply.approvisionnement.repository.RawMaterialRepository;
+import org.supplychain.mysupply.approvisionnement.repository.SupplierRepository;
 import org.supplychain.mysupply.approvisionnement.service.interf.IRawMaterialService;
 import org.supplychain.mysupply.common.exception.ResourceNotFoundException;
 import org.supplychain.mysupply.common.exception.UnauthorizedException;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ public class RawMaterialService implements IRawMaterialService {
 
     private final RawMaterialRepository rawMaterialRepository;
     private final RawMaterialMapper rawMaterialMapper;
+    private final SupplierRepository supplierRepository;
 
     @Override
     public RawMaterialResponseDTO createRawMaterial(RawMaterialDTO rawMaterialDTO) {
@@ -31,6 +35,12 @@ public class RawMaterialService implements IRawMaterialService {
         }
 
         RawMaterial rawMaterial = rawMaterialMapper.toEntity(rawMaterialDTO);
+
+        if (rawMaterialDTO.getSupplierIds() != null && !rawMaterialDTO.getSupplierIds().isEmpty()) {
+            List<Supplier> suppliers = supplierRepository.findAllById(rawMaterialDTO.getSupplierIds());
+
+            rawMaterial.setSuppliers(suppliers);
+        }
         RawMaterial savedMaterial = rawMaterialRepository.save(rawMaterial);
         return rawMaterialMapper.toResponseDTO(savedMaterial);
     }

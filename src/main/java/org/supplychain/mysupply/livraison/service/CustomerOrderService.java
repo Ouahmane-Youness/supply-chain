@@ -52,8 +52,8 @@ public class CustomerOrderService implements ICustomerOrderService {
     private final CustomerOrderMapper customerOrderMapper;
     private final CustomerOrderLineMapper customerOrderLineMapper;
     private final DeliveryMapper deliveryMapper;
-//    private final IProductionOrderService productionOrderService;
-//    private final SupplyOrderService supplyOrderService;
+    private final IProductionOrderService productionOrderService;
+    private final SupplyOrderService supplyOrderService;
 
     @Override
     public OrderResponseDTO createOrder(OrderDTO orderDTO) {
@@ -64,7 +64,6 @@ public class CustomerOrderService implements ICustomerOrderService {
         Customer customer = customerRepository.findById(orderDTO.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + orderDTO.getCustomerId()));
 
-//        CreateProductionORder(orderDTO.getOrderLines());
         validateProductAvailability(orderDTO.getOrderLines());
 
         CustomerOrder customerOrder = customerOrderMapper.toEntity(orderDTO);
@@ -98,57 +97,6 @@ public class CustomerOrderService implements ICustomerOrderService {
         return mapToResponseDTO(savedOrder);
     }
 
-//
-//    private void CreateProductionORder(List<OrderLineDTO> orderLineDTOS)
-//    {
-//
-//        for(OrderLineDTO lineDTO : orderLineDTOS)
-//        {
-//            Product product = productRepository.findById(lineDTO.getProductId()).orElseThrow(() -> new ResourceNotFoundException("product not found"));
-//            Integer productQ = product.getStock();
-//            Integer qordered = lineDTO.getQuantity();
-//            if(productQ < qordered)
-//            {
-//                List<BillOfMaterial> boms = product.getBillOfMaterials();
-//                for (BillOfMaterial bom : boms)
-//                {
-//                    RawMaterial rawMaterial = bom.getMaterial();
-//                    Supplier supplierMvp = rawMaterial.getSuppliers().stream().filter(supplier -> supplier.getRating() != null)
-//                            .max(Comparator.comparing(Supplier::getRating)).orElseThrow();
-//
-//                    int quantity = bom.getQuantity();
-//                    int productQNeeded = qordered - productQ;
-//                    if(rawMaterial.getStock() < productQNeeded * quantity)
-//                    {
-//                        SupplyOrderDTO supplyOrderDTO = new SupplyOrderDTO();
-//                        supplyOrderDTO.setOrderDate(LocalDate.parse("2025-12-12"));
-//                        supplyOrderDTO.setOrderNumber("order" + System.currentTimeMillis());
-//                        supplyOrderDTO.setSupplierId(supplierMvp.getIdSupplier());
-//
-//                        SupplyOrderLineDTO orderLineDTO = new SupplyOrderLineDTO();
-//                        orderLineDTO.setQuantity(productQNeeded * quantity - rawMaterial.getStock());
-//                        orderLineDTO.setUnitPrice(BigDecimal.valueOf(550));
-//                        orderLineDTO.setRawMaterialId(rawMaterial.getIdMaterial());
-//
-//                        supplyOrderDTO.setOrderLines(List.of(orderLineDTO));
-//                        supplyOrderService.createSupplyOrder(supplyOrderDTO);
-//
-//
-//                    }
-//                }
-//
-//
-//                ProductionOrderDTO productionOrderDTO = new ProductionOrderDTO();
-//                productionOrderDTO.setProductId(product.getIdProduct());
-//                productionOrderDTO.setOrderDate(LocalDate.parse("2025-12-12"));
-//                productionOrderDTO.setOrderNumber("order"+System.currentTimeMillis());
-//                productionOrderDTO.setPriority(Priority.URGENT);
-//                productionOrderDTO.setQuantity(qordered - productQ);
-//
-//                productionOrderService.createProductionOrder(productionOrderDTO);
-//            }
-//        }
-//    }
 
 
 

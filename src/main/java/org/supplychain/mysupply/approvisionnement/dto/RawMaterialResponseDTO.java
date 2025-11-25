@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -20,4 +21,5 @@ public class RawMaterialResponseDTO {
     private String unit;
     private LocalDate lastRestockDate;
     private boolean lowStock;
+    private List<SupplierResponseDTO> suppliers;
 }
