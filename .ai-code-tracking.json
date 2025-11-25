@@ -484,12 +484,34 @@
       "aiTool": "AI Assistant",
       "detectionMethod": "REALTIME_SPEED_ANALYSIS",
       "lineCount": 1
+    },
+    {
+      "filePath": "/home/youness/IdeaProjects/mySupply/src/main/java/org/supplychain/mysupply/common/config/SecurityConfig.java",
+      "timestamp": 1763829942646,
+      "startOffset": 0,
+      "endOffset": 81,
+      "codeContent": "package org.supplychain.mysupply.common.config;\n\npublic class SecurityConfig {\n}\n",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 5
+    },
+    {
+      "filePath": "/home/youness/IdeaProjects/mySupply/src/main/java/org/supplychain/mysupply/common/config/SecurityConfig.java",
+      "timestamp": 1763829945703,
+      "startOffset": 49,
+      "endOffset": 5002,
+      "codeContent": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\nimport org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;\nimport org.springframework.security.config.http.SessionCreationPolicy;\nimport org.springframework.security.core.userdetails.User;\nimport org.springframework.security.core.userdetails.UserDetails;\nimport org.springframework.security.core.userdetails.UserDetailsService;\nimport org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;\nimport org.springframework.security.crypto.password.PasswordEncoder;\nimport org.springframework.security.provisioning.InMemoryUserDetailsManager;\nimport org.springframework.security.web.SecurityFilterChain;\n\n@Configuration\n@EnableWebSecurity\npublic class SecurityConfig {\n\n    @Bean\n    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {\n        http\n            .csrf(csrf -\u003e csrf.disable())\n            \n            .authorizeHttpRequests(auth -\u003e auth\n                .requestMatchers(\"/api/raw-materials/**\", \"/api/suppliers/**\", \"/api/supply-orders/**\")\n                    .hasAnyRole(\"ADMIN\", \"GESTIONNAIRE_APPROVISIONNEMENT\", \"RESPONSABLE_ACHATS\", \"SUPERVISEUR_LOGISTIQUE\")\n                \n                .requestMatchers(\"/api/products/**\", \"/api/production-orders/**\")\n                    .hasAnyRole(\"ADMIN\", \"CHEF_PRODUCTION\", \"PLANIFICATEUR\", \"SUPERVISEUR_PRODUCTION\")\n                \n                .requestMatchers(\"/api/customers/**\", \"/api/customer-orders/**\", \"/api/deliveries/**\")\n                    .hasAnyRole(\"ADMIN\", \"GESTIONNAIRE_COMMERCIAL\", \"RESPONSABLE_LOGISTIQUE\", \"SUPERVISEUR_LIVRAISONS\")\n                \n                .requestMatchers(\"/api/users/**\")\n                    .hasRole(\"ADMIN\")\n                \n                .requestMatchers(\"/api/test/**\")\n                    .permitAll()\n                \n                .anyRequest().authenticated()\n            )\n            \n            .httpBasic(basic -\u003e {})\n            \n            .sessionManagement(session -\u003e \n                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)\n            );\n\n        return http.build();\n    }\n\n    @Bean\n    public PasswordEncoder passwordEncoder() {\n        return new BCryptPasswordEncoder();\n    }\n\n    @Bean\n    public UserDetailsService userDetailsService() {\n        UserDetails admin \u003d User.builder()\n            .username(\"admin\")\n            .password(passwordEncoder().encode(\"admin123\"))\n            .roles(\"ADMIN\")\n            .build();\n\n        UserDetails gestionnaireAppro \u003d User.builder()\n            .username(\"gestionnaire\")\n            .password(passwordEncoder().encode(\"gestionnaire123\"))\n            .roles(\"GESTIONNAIRE_APPROVISIONNEMENT\")\n            .build();\n\n        UserDetails responsableAchats \u003d User.builder()\n            .username(\"acheteur\")\n            .password(passwordEncoder().encode(\"acheteur123\"))\n            .roles(\"RESPONSABLE_ACHATS\")\n            .build();\n\n        UserDetails superviseurLogistique \u003d User.builder()\n            .username(\"logistique_sup\")\n            .password(passwordEncoder().encode(\"logistique123\"))\n            .roles(\"SUPERVISEUR_LOGISTIQUE\")\n            .build();\n\n        UserDetails chefProduction \u003d User.builder()\n            .username(\"chef_prod\")\n            .password(passwordEncoder().encode(\"chef123\"))\n            .roles(\"CHEF_PRODUCTION\")\n            .build();\n\n        UserDetails planificateur \u003d User.builder()\n            .username(\"planif\")\n            .password(passwordEncoder().encode(\"planif123\"))\n            .roles(\"PLANIFICATEUR\")\n            .build();\n\n        UserDetails superviseurProduction \u003d User.builder()\n            .username(\"prod_sup\")\n            .password(passwordEncoder().encode(\"prod123\"))\n            .roles(\"SUPERVISEUR_PRODUCTION\")\n            .build();\n\n        UserDetails gestionnaireCommercial \u003d User.builder()\n            .username(\"commercial\")\n            .password(passwordEncoder().encode(\"commercial123\"))\n            .roles(\"GESTIONNAIRE_COMMERCIAL\")\n            .build();\n\n        UserDetails responsableLogistique \u003d User.builder()\n            .username(\"resp_logistique\")\n            .password(passwordEncoder().encode(\"resplog123\"))\n            .roles(\"RESPONSABLE_LOGISTIQUE\")\n            .build();\n\n        UserDetails superviseurLivraisons \u003d User.builder()\n            .username(\"livraison_sup\")\n            .password(passwordEncoder().encode(\"livraison123\"))\n            .roles(\"SUPERVISEUR_LIVRAISONS\")\n            .build();\n\n        return new InMemoryUserDetailsManager(\n            admin, gestionnaireAppro, responsableAchats, superviseurLogistique,\n            chefProduction, planificateur, superviseurProduction,\n            gestionnaireCommercial, responsableLogistique, superviseurLivraisons\n        );\n    }\n}",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 124
     }
   ],
   "toolStats": {
     "AI Assistant": {
-      "usageCount": 44,
-      "totalLines": 63
+      "usageCount": 46,
+      "totalLines": 192
     }
   }
 }
