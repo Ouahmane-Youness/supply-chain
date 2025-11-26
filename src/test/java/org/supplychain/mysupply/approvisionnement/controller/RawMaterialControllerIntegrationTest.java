@@ -121,6 +121,7 @@ class RawMaterialControllerIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+
     @Test
     void getAllRawMaterials_ShouldReturn200AndListOfMaterials() throws Exception {
         RawMaterial material1 = new RawMaterial();
